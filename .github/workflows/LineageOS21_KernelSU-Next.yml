@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  TZ: America/New_York
+  TZ: Asia/Jakarta
 
 jobs:
   build:
@@ -20,8 +20,8 @@ jobs:
 
     - name: Setup build kernel environment
       run: |
-        echo "BUILD_TIME=$(TZ=America/New_York date "+%y%m%d")" >> $GITHUB_ENV
-        echo "BUILD_TIME_1=$(TZ=America/New_York date "+%Y-%m-%d")" >> $GITHUB_ENV
+        echo "BUILD_TIME=$(TZ=Asia/Jakarta date "+%y%m%d")" >> $GITHUB_ENV
+        echo "BUILD_TIME_1=$(TZ=Asia/Jakarta date "+%Y-%m-%d")" >> $GITHUB_ENV
         sudo apt-get update
         sudo apt-get install git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib bzip2 libbz2-dev liblz4-tool make squashfs-tools dpkg-dev libssl-dev python3 bc libc6-dev-i386 libncurses5-dev
         mkdir -p $GITHUB_WORKSPACE/kernel_workspace
@@ -34,13 +34,12 @@ jobs:
     - name: Download Gcc from aosp
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-          git clone https://gitlab.com/crdroidandroid/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 gcc-64
           git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 gcc-32
 
     - name: Download kernel source
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        git clone --recursive https://github.com/a02-trial/BR_kernel_a02/ -b lineage-21 android-kernel --depth=1
+        git clone --recursive https://github.com/a02-trial/BR_kernel_a02/ -b a11 android-kernel --depth=1
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel/scripts
         sed -i 's/ -dirty//g' setlocalversion
 
@@ -52,7 +51,7 @@ jobs:
         KSU_VERSION=$(cd KernelSU-Next && expr $(/usr/bin/git rev-list --count HEAD) + 10200)
         echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
 
-    - name: Build Joan kernel with KernelSU Next
+    - name: Build SM-A022F kernel with KernelSU Next
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
         export ARCH=arm
@@ -61,11 +60,11 @@ jobs:
         export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
         BA_CMD="CLANG_TRIPLE=arm-linux-gnu- CROSS_COMPILE=arm-linux-android- CROSS_COMPILE_ARM32=arm-linux-androideabi-"
         EX_CMD="LD=ld.lld LLVM=1 LLVM_IAS=1"
-        DEFCONFIG="lineageos_joan_defconfig"
+        DEFCONFIG="lineageos_a02_defconfig"
         make O=out ARCH=arm CC=clang $BA_CMD $EX_CMD $DEFCONFIG
         make -j$(nproc --all) O=out ARCH=arm CC=clang $BA_CMD $EX_CMD
 
-    - name: Check kernel output files for Joan Image
+    - name: Check kernel output files for SM-A022F Image
       run: |
        cd $GITHUB_WORKSPACE/kernel_workspace
        if [ -f android-kernel/out/arch/arm/boot/Image ]; then
