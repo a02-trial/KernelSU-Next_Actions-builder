@@ -60,7 +60,7 @@ jobs:
         export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
         BA_CMD="CLANG_TRIPLE=arm-linux-gnu- CROSS_COMPILE=arm-linux-android- CROSS_COMPILE_ARM32=arm-linux-androideabi-"
         EX_CMD="LD=ld.lld LLVM=1 LLVM_IAS=1"
-        DEFCONFIG="lineageos_a02_defconfig"
+        DEFCONFIG="a02_defconfig"
         make O=out ARCH=arm CC=clang $BA_CMD $EX_CMD $DEFCONFIG
         make -j$(nproc --all) O=out ARCH=arm CC=clang $BA_CMD $EX_CMD
 
@@ -89,7 +89,7 @@ jobs:
         name: Image-LOS21-SM-A022F_KernelSU-Next_${{ env.KSUVER }}
         path: kernel_workspace/android-kernel/out/arch/arm/boot/Image
 
-    - name: Upload Joan AnyKernel3 zip
+    - name: Packing With AnyKernel3 zip
       if: env.CHECK_IMAGE == 'true'
       uses: actions/upload-artifact@v4
       with:
