@@ -1,4 +1,4 @@
-name: Build LineageOS 21 Joan/L-01K Kernel with KernelSU-Next
+name: Build LineageOS 21 SM-A022F Kernel with KernelSU-Next
 
 on:
   workflow_dispatch:
@@ -40,7 +40,7 @@ jobs:
     - name: Download kernel source
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        git clone --recursive https://github.com/JacoaFur/android_kernel_lge_msm8998 -b lineage-21 android-kernel --depth=1
+        git clone --recursive https://github.com/a02-trial/BR_kernel_a02/ -b lineage-21 android-kernel --depth=1
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel/scripts
         sed -i 's/ -dirty//g' setlocalversion
 
@@ -55,92 +55,44 @@ jobs:
     - name: Build Joan kernel with KernelSU Next
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
-        export ARCH=arm64
-        export SUBARCH=arm
-        export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang-aosp/bin:$GITHUB_WORKSPACE/kernel_workspace/gcc-64/bin:$GITHUB_WORKSPACE/kernel_workspace/gcc-32/bin:$PATH
+        export ARCH=arm
+        export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang-aosp/bin:$GITHUB_WORKSPACE/kernel_workspace/gcc-32/bin:$PATH
         export KBUILD_BUILD_HOST=Github-Action
         export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
-        BA_CMD="CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-android- CROSS_COMPILE_ARM32=arm-linux-androideabi-"
+        BA_CMD="CLANG_TRIPLE=arm-linux-gnu- CROSS_COMPILE=arm-linux-android- CROSS_COMPILE_ARM32=arm-linux-androideabi-"
         EX_CMD="LD=ld.lld LLVM=1 LLVM_IAS=1"
         DEFCONFIG="lineageos_joan_defconfig"
-        make O=out ARCH=arm64 CC=clang $BA_CMD $EX_CMD $DEFCONFIG
-        make -j$(nproc --all) O=out ARCH=arm64 CC=clang $BA_CMD $EX_CMD
+        make O=out ARCH=arm CC=clang $BA_CMD $EX_CMD $DEFCONFIG
+        make -j$(nproc --all) O=out ARCH=arm CC=clang $BA_CMD $EX_CMD
 
     - name: Check kernel output files for Joan Image
       run: |
        cd $GITHUB_WORKSPACE/kernel_workspace
-       if [ -f android-kernel/out/arch/arm64/boot/Image ]; then
+       if [ -f android-kernel/out/arch/arm/boot/Image ]; then
            echo "CHECK_IMAGE=true" >> $GITHUB_ENV
        else
            echo "Kernel output file is empty"
            exit 1
        fi
 
-    - name: Make AnyKernel3 with Joan Image
+    - name: Make AnyKernel3 with SM-A022F Image
       if: env.CHECK_IMAGE == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         git clone https://github.com/JacoaFur/AnyKernel3-Fork --depth=1 AnyKernel3
-        cp android-kernel/out/arch/arm64/boot/Image AnyKernel3/
+        cp android-kernel/out/arch/arm/boot/Image AnyKernel3/
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
 
-    - name: Upload Joan Image
+    - name: Upload SM-A022F Image
       if: env.CHECK_IMAGE == 'true'
       uses: actions/upload-artifact@v4
       with:
-        name: Image-LOS21-Joan_KernelSU-Next_${{ env.KSUVER }}
-        path: kernel_workspace/android-kernel/out/arch/arm64/boot/Image
+        name: Image-LOS21-SM-A022F_KernelSU-Next_${{ env.KSUVER }}
+        path: kernel_workspace/android-kernel/out/arch/arm/boot/Image
 
     - name: Upload Joan AnyKernel3 zip
       if: env.CHECK_IMAGE == 'true'
       uses: actions/upload-artifact@v4
       with:
-        name: AK3-LOS21-Joan_KernelSU-Next_${{ env.KSUVER }}-${{ env.BUILD_TIME }}
-        path: kernel_workspace/AnyKernel3/*
-
-    - name: Build L-01K kernel with KernelSU Next
-      run: |
-        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
-        export ARCH=arm64
-        export SUBARCH=arm
-        export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang-aosp/bin:$GITHUB_WORKSPACE/kernel_workspace/gcc-64/bin:$GITHUB_WORKSPACE/kernel_workspace/gcc-32/bin:$PATH
-        export KBUILD_BUILD_HOST=Github-Action
-        export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
-        BA_CMD="CLANG_TRIPLE=aarch64-linux-gnu- CROSS_COMPILE=aarch64-linux-android- CROSS_COMPILE_ARM32=arm-linux-androideabi-"
-        EX_CMD="LD=ld.lld LLVM=1 LLVM_IAS=1"
-        DEFCONFIG="lineageos_l01k_defconfig"
-        make O=out ARCH=arm64 CC=clang $BA_CMD $EX_CMD $DEFCONFIG
-        make -j$(nproc --all) O=out ARCH=arm64 CC=clang $BA_CMD $EX_CMD
-
-    - name: Check kernel output files for L-01K Image
-      run: |
-       cd $GITHUB_WORKSPACE/kernel_workspace
-       if [ -f android-kernel/out/arch/arm64/boot/Image ]; then
-           echo "CHECK_IMAGE_1=true" >> $GITHUB_ENV
-       else
-           echo "Kernel output file is empty"
-           exit 1
-       fi
-
-    - name: Make AnyKernel3 with L-01K Image
-      if: env.CHECK_IMAGE_1 == 'true'
-      run: |
-        cd $GITHUB_WORKSPACE/kernel_workspace
-        rm -rf AnyKernel3
-        git clone https://github.com/JacoaFur/AnyKernel3-Fork --depth=1 AnyKernel3
-        cp android-kernel/out/arch/arm64/boot/Image AnyKernel3/
-        rm -rf AnyKernel3/.git* AnyKernel3/README.md
-
-    - name: Upload L-01K Image
-      if: env.CHECK_IMAGE_1 == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: Image-LOS21-l01k_KernelSU-Next_${{ env.KSUVER }}
-        path: kernel_workspace/android-kernel/out/arch/arm64/boot/Image
-
-    - name: Upload L-01K AnyKernel3 zip
-      if: env.CHECK_IMAGE_1 == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: AK3-LOS21-l01k_KernelSU-Next_${{ env.KSUVER }}-${{ env.BUILD_TIME }}
+        name: AK3-LOS21-SM-A022F_KernelSU-Next_${{ env.KSUVER }}-${{ env.BUILD_TIME }}
         path: kernel_workspace/AnyKernel3/*
