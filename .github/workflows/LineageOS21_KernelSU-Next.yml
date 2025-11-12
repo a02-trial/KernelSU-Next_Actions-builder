@@ -1,4 +1,4 @@
-name: Build LineageOS 21 SM-A022F Kernel with KernelSU-Next
+name: Build SM-A022F Kernel
 
 on:
   workflow_dispatch:
@@ -58,7 +58,7 @@ jobs:
         export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang-aosp/bin:$GITHUB_WORKSPACE/kernel_workspace/gcc-32/bin:$PATH
         export KBUILD_BUILD_HOST=Github-Action
         export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
-        BA_CMD="CLANG_TRIPLE=arm-linux-gnu- CROSS_COMPILE=arm-linux-android- CROSS_COMPILE_ARM32=arm-linux-androideabi-"
+        BA_CMD="CLANG_TRIPLE=arm-linux-gnueabi- CROSS_COMPILE=arm-linux-androideabi-
         EX_CMD="LD=ld.lld LLVM=1 LLVM_IAS=1"
         DEFCONFIG="a02_defconfig"
         make O=out ARCH=arm CC=clang $BA_CMD $EX_CMD $DEFCONFIG
