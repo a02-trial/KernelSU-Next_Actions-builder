@@ -39,7 +39,7 @@ jobs:
     - name: Download kernel source
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        git clone --recursive https://github.com/a02-trial/BR_kernel_a02/ -b a11 android-kernel --depth=1
+        git clone --recursive https://github.com/a02-trial/a02kernel/ -b main android-kernel --depth=1
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel/scripts
         sed -i 's/ -dirty//g' setlocalversion
 
